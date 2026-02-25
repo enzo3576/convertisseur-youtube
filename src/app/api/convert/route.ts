@@ -40,8 +40,9 @@ export async function POST(request: Request) {
         const fetchRes = await fetch(`https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${videoId}`, options);
         const data = await fetchRes.json();
 
-        if (!fetchRes.ok || !data.status) {
-            throw new Error(data.message || "Erreur de l'API de téléchargement externe");
+        if (!fetchRes.ok) {
+            console.error("RapidAPI Error Details:", data);
+            throw new Error(data.message || data.error || "Erreur de l'API de téléchargement externe");
         }
 
         // On cherche le meilleur flux vidéo en mp4
