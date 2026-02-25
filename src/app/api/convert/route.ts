@@ -12,15 +12,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "URL YouTube Invalide" }, { status: 400 });
         }
 
-        // Appel à notre propre API Python hébergée gratuitement sur Render
-        const renderApiUrl = "https://ztube-api.onrender.com/convert";
+        const apiKey = process.env.RAPIDAPI_KEY;
+        if (!apiKey) {
+            return NextResponse.json({
+                error: "Défaut de configuration : la variable RAPIDAPI_KEY est manquante."
+            }, { status: 500 });
+        }
 
-        const fetchRes = await fetch(renderApiUrl, {
-            method: 'POST',
+        // Appel à la nouvelle API "Youtube Download/Search" par YThelper (500/mois)
+        const fetchRes = await fetch(`https://youtube-download-search.p.rapidapi.com/dl?url=${encodeURIComponent(url)}`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url })
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': 'youtube-download-search.p.rapidapi.com'
+            }
         });
 
         let data;
@@ -30,19 +35,50 @@ export async function POST(request: Request) {
             data = { text: await fetchRes.text() };
         }
 
-        if (!fetchRes.ok) {
-            console.error("Custom API Error Details:", data);
-            throw new Error(`Erreur d'extraction : ` + (data.detail || JSON.stringify(data)));
+        if (!fetchRes.ok || !data) {
+            console.error("New RapidAPI Error Details:", data);
+            throw new Error(`Erreur RapidAPI : ` + JSON.stringify(data));
         }
 
-        if (!data.success || !data.videoData || !data.videoData.downloadUrl) {
+        // This specific API returns the format list under data.formats
+        const formats = data.formats || [];
+
+        // On cherche le meilleur flux vidéo en mp4 avec le son
+        const mp4Videos = formats.filter((v: any) => v.ext === 'mp4' && v.acodec !== 'none' && v.vcodec !== 'none');
+
+        // Préférence pour la meilleure qualité (souvent 720p ou 1080p ont le son compressé ensemble sur cette API)
+        const preferredQualities = ["1080p", "720p", "480p", "360p"];
+        let bestVideo = null;
+
+        for (const quality of preferredQualities) {
+            const found = mp4Videos.find((v: any) => v.format_note === quality);
+            if (found) {
+                bestVideo = found;
+                break;
+            }
+        }
+
+        // Si on ne trouve pas de mp4 explicite avec le bon 'format_note', on prend le premier qui a au moins url + ext=mp4
+        if (!bestVideo) {
+            const fallback = formats.filter((v: any) => v.ext === 'mp4' && v.url);
+            bestVideo = fallback.length > 0 ? fallback[0] : null;
+        }
+
+        if (!bestVideo || !bestVideo.url) {
             throw new Error("Aucun lien de téléchargement MP4 n'a été trouvé pour cette vidéo.");
         }
 
         return NextResponse.json({
             success: true,
             message: "Traitement terminé",
-            videoData: data.videoData
+            videoData: {
+                title: data.title || "Youtube_Video",
+                format: "mp4",
+                resolution: bestVideo.format_note || "1080p",
+                codec: "H.264",
+                watermark: false,
+                downloadUrl: bestVideo.url
+            }
         });
 
     } catch (error: any) {
