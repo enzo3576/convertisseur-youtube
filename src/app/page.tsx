@@ -9,6 +9,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState("");
 
   const handleConvert = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +36,7 @@ export default function Home() {
         throw new Error(data.error || "Failed to convert video");
       }
 
+      setDownloadUrl(data.videoData?.downloadUrl || "#");
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred. Please try again.");
@@ -139,13 +141,27 @@ export default function Home() {
                 <p className="text-slate-400 text-sm mb-6">
                   Your video has been successfully processed in 1080p H.264.
                 </p>
-                <button
-                  onClick={() => setSuccess(false)}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Video
-                </button>
+                <div className="flex gap-4 justify-center">
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download="youtube_short.mp4"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Video
+                  </a>
+                  <button
+                    onClick={() => {
+                      setSuccess(false);
+                      setUrl("");
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-3 px-6 rounded-lg transition-colors"
+                  >
+                    Convert Another
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
