@@ -138,10 +138,17 @@ export default function Home() {
                   <Download className="w-8 h-8 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-emerald-400 mb-2">Ready for Download</h3>
-                <p className="text-slate-400 text-sm mb-6">
+                <p className="text-slate-400 text-sm mb-4">
                   Your video has been successfully processed in 1080p H.264.
                 </p>
-                <div className="flex gap-4 justify-center">
+                <div className="mb-6 rounded-lg overflow-hidden border border-slate-700/50 max-w-sm mx-auto shadow-lg relative bg-black/50">
+                  <video
+                    src={downloadUrl}
+                    controls
+                    className="w-full h-auto max-h-[300px] object-contain"
+                  />
+                </div>
+                <div className="flex gap-4 justify-center flex-wrap">
                   <a
                     href={downloadUrl}
                     target="_blank"
