@@ -49,34 +49,24 @@ export async function POST(request: Request) {
             throw new Error(`Erreur RapidAPI : ` + JSON.stringify(data));
         }
 
-        // YT-API renvoie les liens de téléchargement sous `data.formats`
+        // YT-API renvoie les flux combinés (audio+vidéo) sous `data.formats`
         const formats = data.formats || [];
 
         // On cherche un format MP4 qui contient les deux (Audio + Vidéo en un seul fichier)
-        // Dans YT-API, 'acodec' n'est pas "none" et 'vcodec' n'est pas "none" pour les fichiers combinés
-        const combinedMp4Videos = formats.filter((v: any) => v.ext === 'mp4' && v.acodec !== 'none' && v.vcodec !== 'none');
+        // Dans YT-API, on vérifie que mimetype inclut 'mp4' et que 'audioQuality' est défini
+        const combinedMp4Videos = formats.filter((v: any) =>
+            v.mimeType && v.mimeType.includes('mp4') && v.audioQuality
+        );
 
-        // Préférence pour la meilleure qualité 
-        const preferredQualities = ["1080p", "720p", "480p", "360p"];
-        let bestVideo = null;
+        // On trie par résolution de la meilleure à la moins bonne
+        combinedMp4Videos.sort((a: any, b: any) => {
+            const resA = parseInt(a.qualityLabel) || 0;
+            const resB = parseInt(b.qualityLabel) || 0;
+            return resB - resA;
+        });
 
-        for (const quality of preferredQualities) {
-            // YT-API stocke parfois la résolution dans 'format_note' ou direct dans 'resolution'
-            const found = combinedMp4Videos.find((v: any) =>
-                v.format_note === quality ||
-                (v.resolution && v.resolution.includes(quality.replace('p', '')))
-            );
-            if (found) {
-                bestVideo = found;
-                break;
-            }
-        }
-
-        // Si on ne trouve pas de mp4 explicite avec le bon 'format_note', on prend le premier qui a au moins url + ext=mp4
-        if (!bestVideo) {
-            const fallback = formats.filter((v: any) => v.ext === 'mp4' && v.url);
-            bestVideo = fallback.length > 0 ? fallback[0] : null;
-        }
+        // On prend la meilleure qualité disponible
+        const bestVideo = combinedMp4Videos.length > 0 ? combinedMp4Videos[0] : null;
 
         if (!bestVideo || !bestVideo.url) {
             throw new Error("Aucun lien de téléchargement MP4 n'a été trouvé pour cette vidéo.");
