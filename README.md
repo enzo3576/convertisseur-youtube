@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YouTube Shorts to MP4 Converter - 1080p H.264
 
-## Getting Started
+A premium Next.js web application that allows users to seamlessly convert and download YouTube Shorts videos without watermarks, purely in 1080p HD H.264 format.
 
-First, run the development server:
+## Technologies Used
+- **Next.js 14** (App Router)
+- **Tailwind CSS** (for styling, including a premium glassmorphic dark mode)
+- **Framer Motion** (for micro-animations and smooth transitions)
+- **TypeScript** (for robust type-safe code)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Getting Started Locally
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Learn More
+## Deploying to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+This application is designed specifically to be deployed natively on Vercel. However, since extracting video from YouTube via heavy binaries like `yt-dlp` or `ffmpeg` surpasses Vercel's 50MB Serverless Function execution limit, the API route is currently stubbed out to accept a fast third-party API integration.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Steps to Deploy:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Push your code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Initial commit of Converter UI"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+   git push -u origin main
+   ```
 
-## Deploy on Vercel
+2. **Connect to Vercel:**
+   - Log into [Vercel](https://vercel.com/)
+   - Click **"Add New..." > "Project"**
+   - Import the repository you just pushed to GitHub.
+   - The framework (Next.js) will be automatically detected.
+   - Click **Deploy**!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Production API Setup:**
+   For the backend video processing to work in production, open `src/app/api/convert/route.ts` and replace the simulated response with a `fetch()` call to a third-party conversion API (like Cobalt API) or deploy a worker separate from Vercel. 
