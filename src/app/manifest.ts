@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'ShortsConverter',
-        short_name: 'ShortsConverter',
+        name: 'Z-Tube',
+        short_name: 'Z-Tube',
         description: 'Convert and download YouTube Shorts directly from your device.',
         start_url: '/',
         display: 'standalone',
