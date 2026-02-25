@@ -52,7 +52,26 @@ export async function POST(request: Request) {
 
         // On cherche le meilleur flux vidéo en mp4
         const videos = data.videos?.items || [];
-        const bestVideo = videos.find((v: any) => v.extension === 'mp4') || videos[0];
+        const mp4Videos = videos.filter((v: any) => v.extension === 'mp4' || v.extension === 'mp4a');
+
+        // Préférence pour la meilleure qualité avec audio et vidéo fusionnés.
+        // Typiquement "1080p" n'a pas toujours le son natif, mais "720p" l'a par défaut.
+        // Si hd1080 existe en complet, on le prend sinon on descend jusqu'à trouver.
+        const preferredQualities = ["1080p", "hd1080", "1080", "720p", "hd720", "720", "480p", "large", "360p", "medium"];
+        let bestVideo = null;
+
+        for (const quality of preferredQualities) {
+            const found = mp4Videos.find((v: any) => v.quality === quality);
+            if (found) {
+                bestVideo = found;
+                break;
+            }
+        }
+
+        // Si aucune qualité correspondante n'a été trouvée, on prend la meilleure par défaut (soit le premier élément de la liste, souvent le meileur ou au moins un mp4)
+        if (!bestVideo) {
+            bestVideo = mp4Videos[0] || videos[0];
+        }
 
         if (!bestVideo || !bestVideo.url) {
             throw new Error("Aucun lien de téléchargement MP4 n'a été trouvé pour cette vidéo.");
