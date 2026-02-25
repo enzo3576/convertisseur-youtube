@@ -1,40 +1,75 @@
 import { NextResponse } from "next/server";
-import ytdl from "@distube/ytdl-core";
 
 export async function POST(request: Request) {
     try {
         const { url } = await request.json();
 
         if (!url) {
-            return NextResponse.json({ error: "URL is required" }, { status: 400 });
+            return NextResponse.json({ error: "L'URL est requise" }, { status: 400 });
         }
 
-        if (!ytdl.validateURL(url)) {
-            return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 });
+        if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+            return NextResponse.json({ error: "URL YouTube Invalide" }, { status: 400 });
         }
 
-        // Fetch video information
-        const info = await ytdl.getInfo(url);
-        const videoDetails = info.videoDetails;
+        // Vérification de la clé d'API
+        const apiKey = process.env.RAPIDAPI_KEY;
+        if (!apiKey) {
+            return NextResponse.json({
+                error: "Défaut de configuration : la variable RAPIDAPI_KEY est manquante sur Vercel."
+            }, { status: 500 });
+        }
+
+        // Extraction de l'ID Youtube (ex: wkTxZt2cKQg)
+        const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=))([\w-]{11})/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+        if (!videoId) {
+            return NextResponse.json({ error: "Impossible de comprendre l'URL ou de trouver l'ID de la vidéo" }, { status: 400 });
+        }
+
+        // Appel à l'API "YouTube Media Downloader" sur RapidAPI
+        const options = {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com'
+            }
+        };
+
+        const fetchRes = await fetch(`https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${videoId}`, options);
+        const data = await fetchRes.json();
+
+        if (!fetchRes.ok || !data.status) {
+            throw new Error(data.message || "Erreur de l'API de téléchargement externe");
+        }
+
+        // On cherche le meilleur flux vidéo en mp4
+        const videos = data.videos?.items || [];
+        const bestVideo = videos.find((v: any) => v.extension === 'mp4') || videos[0];
+
+        if (!bestVideo || !bestVideo.url) {
+            throw new Error("Aucun lien de téléchargement MP4 n'a été trouvé pour cette vidéo.");
+        }
 
         return NextResponse.json({
             success: true,
-            message: "Processing started",
+            message: "Traitement terminé",
             videoData: {
-                title: videoDetails.title,
+                title: data.title || "Youtube_Video",
                 format: "mp4",
-                resolution: "HD", // Typically 720p or 1080p source depending on the native merged format
+                resolution: bestVideo.quality || "1080p",
                 codec: "H.264",
                 watermark: false,
-                // We pass the ORIGINAL youtube url back so the download proxy can stream it
-                downloadUrl: url
+                // On passe le lien final vers lequel notre proxy `api/download` va forcer le téléchargement
+                downloadUrl: bestVideo.url
             }
         });
 
     } catch (error: any) {
-        console.error("Conversion error:", error);
+        console.error("Erreur de conversion:", error);
         return NextResponse.json(
-            { error: "Internal server error during conversion. Ensure the video is public." },
+            { error: "Erreur serveur : " + (error.message || "impossible de contacter l'API") },
             { status: 500 }
         );
     }
