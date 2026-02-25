@@ -19,6 +19,14 @@ export async function POST(request: Request) {
             }, { status: 500 });
         }
 
+        // Extraction de l'ID Youtube (ex: wkTxZt2cKQg)
+        const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=))([\w-]{11})/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+        if (!videoId) {
+            return NextResponse.json({ error: "Impossible de comprendre l'URL ou de trouver l'ID de la vidéo" }, { status: 400 });
+        }
+
         // Appel à la nouvelle API "YT-API" (300 requêtes gratuites/mois)
         // Endpoint correct pour télécharger des vidéos via cette API : https://yt-api.p.rapidapi.com/dl?id=ID
         const fetchRes = await fetch(`https://yt-api.p.rapidapi.com/dl?id=${videoId}`, {
