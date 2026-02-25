@@ -1,48 +1,48 @@
-# YouTube Shorts to MP4 Converter - 1080p H.264
+# Convertisseur YouTube Shorts vers MP4 - 1080p H.264
 
-A premium Next.js web application that allows users to seamlessly convert and download YouTube Shorts videos without watermarks, purely in 1080p HD H.264 format.
+Une application web Next.js premium qui permet aux utilisateurs de convertir et télécharger facilement des vidéos YouTube Shorts sans filigrane, en qualité 1080p HD et au format H.264.
 
-## Technologies Used
+## Technologies Utilisées
 - **Next.js 14** (App Router)
-- **Tailwind CSS** (for styling, including a premium glassmorphic dark mode)
-- **Framer Motion** (for micro-animations and smooth transitions)
-- **TypeScript** (for robust type-safe code)
+- **Tailwind CSS** (pour le style, incluant un mode sombre premium avec effet *glassmorphism*)
+- **Framer Motion** (pour les micro-animations et les transitions fluides)
+- **TypeScript** (pour un code robuste et typé)
 
-## Getting Started Locally
+## Démarrage en Local
 
-1. Install dependencies:
+1. Installez les dépendances :
    ```bash
    npm install
    ```
 
-2. Run the development server:
+2. Lancez le serveur de développement :
    ```bash
    npm run dev
    ```
 
-3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur pour voir le résultat.
 
-## Deploying to Vercel
+## Déploiement sur Vercel
 
-This application is designed specifically to be deployed natively on Vercel. However, since extracting video from YouTube via heavy binaries like `yt-dlp` or `ffmpeg` surpasses Vercel's 50MB Serverless Function execution limit, the API route is currently stubbed out to accept a fast third-party API integration.
+Cette application est conçue spécifiquement pour être déployée nativement sur Vercel. Toutefois, comme l'extraction de vidéos depuis YouTube via des exécutables lourds comme `yt-dlp` ou `ffmpeg` dépasse la limite de taille d'exécution de 50 Mo des fonctions Serverless de Vercel, la route API est actuellement simulée en attendant d'être connectée à l'intégration d'une API tierce rapide.
 
-### Steps to Deploy:
+### Étapes de Déploiement :
 
-1. **Push your code to GitHub:**
+1. **Poussez votre code sur GitHub :**
    ```bash
    git add .
-   git commit -m "Initial commit of Converter UI"
+   git commit -m "Premier commit du Convertisseur UI"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+   git remote add origin https://github.com/VOTRE_NOM_UTILISATEUR/VOTRE_DEPOT.git
    git push -u origin main
    ```
 
-2. **Connect to Vercel:**
-   - Log into [Vercel](https://vercel.com/)
-   - Click **"Add New..." > "Project"**
-   - Import the repository you just pushed to GitHub.
-   - The framework (Next.js) will be automatically detected.
-   - Click **Deploy**!
+2. **Connectez-vous à Vercel :**
+   - Connectez-vous sur [Vercel](https://vercel.com/)
+   - Cliquez sur **"Add New..." > "Project"**
+   - Importez le dépôt que vous venez de pousser sur GitHub.
+   - Le framework (Next.js) sera automatiquement détecté.
+   - Cliquez sur **Deploy** !
 
-3. **Production API Setup:**
-   For the backend video processing to work in production, open `src/app/api/convert/route.ts` and replace the simulated response with a `fetch()` call to a third-party conversion API (like Cobalt API) or deploy a worker separate from Vercel. 
+3. **Configuration de l'API en Production :**
+   Pour que le traitement vidéo en arrière-plan fonctionne en production, ouvrez le fichier `src/app/api/convert/route.ts` et remplacez la réponse simulée par un appel `fetch()` vers une API tierce de conversion (comme l'API Cobalt) ou déployez un service travailleur (worker) séparé de Vercel.
