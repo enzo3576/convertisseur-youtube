@@ -143,7 +143,9 @@ export default function Home() {
                 </p>
                 <div className="flex gap-4 justify-center">
                   <a
-                    href={`/api/download?url=${encodeURIComponent(downloadUrl)}`}
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     download="youtube_short.mp4"
                     className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
                   >
