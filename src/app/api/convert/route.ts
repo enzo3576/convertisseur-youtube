@@ -38,7 +38,7 @@ export async function POST(request: Request) {
                 resolution: "1080p",
                 codec: "H.264",
                 watermark: false,
-                downloadUrl: "https://example.com/download/simulated_video.mp4"
+                downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
             }
         });
 
