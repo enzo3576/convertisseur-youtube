@@ -19,12 +19,13 @@ export async function POST(request: Request) {
             }, { status: 500 });
         }
 
-        // Appel à la nouvelle API "Youtube Download/Search" par YThelper (500/mois)
-        const fetchRes = await fetch(`https://youtube-download-search.p.rapidapi.com/dl?url=${encodeURIComponent(url)}`, {
+        // Appel à la nouvelle API "YT-API" (300 requêtes gratuites/mois)
+        // Endpoint correct pour télécharger des vidéos via cette API : https://yt-api.p.rapidapi.com/dl?id=ID
+        const fetchRes = await fetch(`https://yt-api.p.rapidapi.com/dl?id=${videoId}`, {
             method: 'GET',
             headers: {
                 'x-rapidapi-key': apiKey,
-                'x-rapidapi-host': 'youtube-download-search.p.rapidapi.com'
+                'x-rapidapi-host': 'yt-api.p.rapidapi.com'
             }
         });
 
@@ -40,18 +41,23 @@ export async function POST(request: Request) {
             throw new Error(`Erreur RapidAPI : ` + JSON.stringify(data));
         }
 
-        // This specific API returns the format list under data.formats
+        // YT-API renvoie les liens de téléchargement sous `data.formats`
         const formats = data.formats || [];
 
-        // On cherche le meilleur flux vidéo en mp4 avec le son
-        const mp4Videos = formats.filter((v: any) => v.ext === 'mp4' && v.acodec !== 'none' && v.vcodec !== 'none');
+        // On cherche un format MP4 qui contient les deux (Audio + Vidéo en un seul fichier)
+        // Dans YT-API, 'acodec' n'est pas "none" et 'vcodec' n'est pas "none" pour les fichiers combinés
+        const combinedMp4Videos = formats.filter((v: any) => v.ext === 'mp4' && v.acodec !== 'none' && v.vcodec !== 'none');
 
-        // Préférence pour la meilleure qualité (souvent 720p ou 1080p ont le son compressé ensemble sur cette API)
+        // Préférence pour la meilleure qualité 
         const preferredQualities = ["1080p", "720p", "480p", "360p"];
         let bestVideo = null;
 
         for (const quality of preferredQualities) {
-            const found = mp4Videos.find((v: any) => v.format_note === quality);
+            // YT-API stocke parfois la résolution dans 'format_note' ou direct dans 'resolution'
+            const found = combinedMp4Videos.find((v: any) =>
+                v.format_note === quality ||
+                (v.resolution && v.resolution.includes(quality.replace('p', '')))
+            );
             if (found) {
                 bestVideo = found;
                 break;
